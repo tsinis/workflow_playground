@@ -1,0 +1,77 @@
+name: release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  changelog:
+    name: 📃 Create changelog
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      changelog: ${{ steps.build_changelog.outputs.changelog }}
+    steps:
+      - name: Checks-out repository
+        uses: actions/checkout@v3
+
+      - name: Build Changelog
+        id: build_changelog
+        uses: mikepenz/release-changelog-builder-action@v2.5.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          configuration: ".github/workflows/actions_settings/changelog_config.json"
+
+  build:
+    name: 🏗️ Build Artifacts and Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checks-out repository
+        uses: actions/checkout@v3
+
+      - name: Read pubspec.yaml version
+        uses: KJ002/read-yaml@1.5
+        id: pubspec-data
+        with:
+          file: "pubspec.yaml"
+          key-path: '["version"]'
+
+      - name: Generate unique Release Tag
+        run: echo RELEASE_TAG=${{ steps.pubspec-data.outputs.data }} | cut -f1 -d"+" >> $GITHUB_ENV
+
+      - name: Echo tag
+        run: echo RELEASE_TAG
+
+      - name: Setup Java
+        uses: actions/setup-java@v1
+        with:
+          java-version: "11.x"
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2.7.1
+        with:
+          channel: "stable"
+          cache: true
+
+      - name: Pub Get Packages
+        run: flutter pub get
+
+      - name: Build Android app
+        run: flutter build apk --release
+
+      - name: Create Github Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "build/app/outputs/flutter-apk/app-release.apk"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: "${{env.RELEASE_TAG}}"
+          body: "${{ github.event.head_commit.message }}"
+
+      - name: Save APK to Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: APK
+          path: build/app/outputs/flutter-apk/app-release.apk
