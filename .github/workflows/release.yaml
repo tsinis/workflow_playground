@@ -43,7 +43,7 @@ jobs:
         run: echo RELEASE_TAG=${{ steps.pubspec-data.outputs.data }} | cut -f1 -d"+" >> $GITHUB_ENV
 
       - name: Echo tag
-        run: echo RELEASE_TAG
+        run: echo $RELEASE_TAG
 
       - name: Setup Java
         uses: actions/setup-java@v1
