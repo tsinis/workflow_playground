@@ -1,14 +1,21 @@
 name: release
 
 on:
-  push:
+  pull_request:
     branches:
       - main
+    paths:
+      - "lib/**"
+      - "test/**"
+      - "integration_test/**"
+      - "pubspec.yaml"
+      - ".github/workflows/release.yaml"
 
 jobs:
   changelog:
     name: 📃 Create changelog
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
     timeout-minutes: 10
     outputs:
       changelog: ${{ steps.build_changelog.outputs.changelog }}
@@ -27,6 +34,7 @@ jobs:
   build:
     name: 🏗️ Build Artifacts and Release
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
     timeout-minutes: 10
     steps:
       - name: Checks-out repository
