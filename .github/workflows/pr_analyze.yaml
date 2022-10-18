@@ -66,7 +66,6 @@ jobs:
         id: vars
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: echo ${{ steps.vars.outputs.pr_title }}
 
       - name: Update PR Title for dependabot
         if: ${{ github.actor == 'tsinis' }}
