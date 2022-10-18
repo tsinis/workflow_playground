@@ -58,6 +58,7 @@ jobs:
           titleRegex: '^INV-(?<ticketNumber>\d+)'
 
       - name: Check for Codemagic ignore
+        if: ${{ github.event.action == 'edited' || github.event.action == 'opened' }}
         uses: fregante/title-to-labels-action@v1
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
