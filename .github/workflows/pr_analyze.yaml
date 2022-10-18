@@ -76,3 +76,12 @@ jobs:
           configuration-path: .github/workflows/actions_settings/pr-labeler.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  task-list-checker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Check for incomplete task list items in PR
+        uses: Shopify/task-list-checker@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
