@@ -57,6 +57,13 @@ jobs:
           ticketPrefix: "INV-"
           titleRegex: '^INV-(?<ticketNumber>\d+)'
 
+      - name: Check for Codemagic ignore
+        uses: fregante/title-to-labels-action@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          keywords: codemagic ignore
+          labels: codemagic ignore
+
   pr-labels:
     name: 🏷️ Add PR Labels
     runs-on: ubuntu-latest
