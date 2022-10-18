@@ -1,0 +1,87 @@
+name: analyze pr and branch
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+      - ready_for_review
+
+permissions:
+  pull-requests: write
+
+jobs:
+  branch-name:
+    name: 🔀 Check branch name
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Assert Branch Naming Convention
+        uses: deepakputhraya/action-branch-name@master
+        with:
+          allowed_prefixes: "feature,feat,test,tests,fix,bug,chore,dependabot,deps,ci,build,docs,doc,style,refactor"
+          ignore: main,release
+          min_length: 10
+
+  assign:
+    name: ✍🏻 Assign PR Author and Reviewer
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Author Assign
+        uses: toshimaru/auto-author-assign@v1.6.1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add Reviewer
+        uses: madrapps/add-reviewers@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          reviewers: github.event.repository.owner.login
+
+  pr-title:
+    name: 📰 Check PR Title
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Check for Ticket Number
+        uses: neofinancial/ticket-check-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ticketLink: "https://caronsale.atlassian.net/browse/INV-%ticketNumber%"
+          ticketPrefix: "INV-"
+          titleRegex: '^INV-(?<ticketNumber>\d+)'
+
+      - name: Add labels based on PR title
+        uses: TDAK1509/set-label-based-on-pr-title@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          labels: codemagic ignore
+          words: codemagic ignore
+
+  pr-labels:
+    name: 🏷️ Add PR Labels
+    runs-on: ubuntu-latest
+    needs: branch-name
+    timeout-minutes: 4
+    steps:
+      - name: Detect and add label(s)
+        uses: TimonVS/pr-labeler-action@v3
+        with:
+          configuration-path: .github/workflows/actions_settings/pr-labeler.yaml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  task-list-checker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Check for incomplete task list items in PR
+        uses: Shopify/task-list-checker@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
