@@ -78,11 +78,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   task-list-checker:
-    name: ✍🏻 Check Comment
+    name: 📜 Check Description
     runs-on: ubuntu-latest
     timeout-minutes: 4
     steps:
       - name: Check for incomplete task list items in PR
-        uses: Shopify/task-list-checker@main
+        uses: kentaro-m/task-completed-checker-action@v0.1.0
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
