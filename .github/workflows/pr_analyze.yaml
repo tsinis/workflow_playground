@@ -60,9 +60,9 @@ jobs:
       - name: Add labels based on PR title
         uses: TDAK1509/set-label-based-on-pr-title@v1
         with:
-          words: codemagic ignore
-          labels: codemagic ignore
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+          labels: codemagic ignore
+          words: codemagic ignore
 
   pr-labels:
     name: 🏷️ Add PR Labels
