@@ -72,6 +72,7 @@ jobs:
         if: ${{ github.actor == 'tsinis' }}
         uses: juztcode/pr-updater@1.0.0
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           title: "${{ steps.vars.outputs.pr_title }} (Codemagic ignore)"
 
       - name: Add labels based on PR title
