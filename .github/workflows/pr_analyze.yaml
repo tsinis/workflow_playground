@@ -14,6 +14,8 @@ on:
 
 permissions:
   pull-requests: write
+  contents: read
+  checks: write
 
 jobs:
   branch-name:
@@ -50,12 +52,28 @@ jobs:
     timeout-minutes: 4
     steps:
       - name: Check for Ticket Number
+        if: ${{ github.actor != 'tsinis' }}
         uses: neofinancial/ticket-check-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           ticketLink: "https://caronsale.atlassian.net/browse/INV-%ticketNumber%"
           ticketPrefix: "INV-"
           titleRegex: '^INV-(?<ticketNumber>\d+)'
+
+      - name: Store Title
+        uses: ramonsnir/gh-action-pr-title@1.0.0
+        if: ${{ github.actor == 'tsinis' }}
+        id: vars
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: echo ${{ steps.vars.outputs.pr_title }}
+
+      - name: Update PR Title for dependabot
+        if: (!contains(steps.vars.outputs.pr_title, 'codemagic ignore')) && github.actor == 'tsinis'
+        uses: juztcode/pr-updater@1.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: "${{ steps.vars.outputs.pr_title }} (Codemagic ignore)"
 
       - name: Add labels based on PR title
         uses: TDAK1509/set-label-based-on-pr-title@v1
@@ -78,10 +96,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   task-list-checker:
+    name: 📜 Check Description
     runs-on: ubuntu-latest
     timeout-minutes: 4
     steps:
       - name: Check for incomplete task list items in PR
-        uses: Shopify/task-list-checker@main
+        uses: kentaro-m/task-completed-checker-action@v0.1.0
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
